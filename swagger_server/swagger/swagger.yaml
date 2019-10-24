@@ -1,0 +1,658 @@
+---
+swagger: "2.0"
+info:
+  description: "A Point Of Interest API"
+  version: "1.0.0"
+  title: "POIs API"
+  contact:
+    email: "jpbjesus@ua.pt"
+host: "virtserver.swaggerhub.com"
+basePath: "/jpbjesus/poi_api/1.0.0"
+tags:
+- name: "poi"
+  description: "Everything about POIs"
+- name: "find"
+  description: "Find POIs"
+- name: "reviews"
+  description: ""
+- name: "assets"
+  description: ""
+schemes:
+- "https"
+- "http"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+paths:
+  /poi:
+    post:
+      tags:
+      - "poi"
+      summary: "Add a new POI to the database"
+      description: ""
+      operationId: "post_poi"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "POI object that needs to be added to the database"
+        required: true
+        schema:
+          $ref: "#/definitions/POI"
+      responses:
+        200:
+          description: "Successful operation"
+          headers: {}
+        405:
+          description: "Invalid input"
+          schema: {}
+        409:
+          description: "POI already exists"
+          schema: {}
+      deprecated: false
+      x-swagger-router-controller: "swagger_server.controllers.poi_controller"
+    put:
+      tags:
+      - "poi"
+      summary: "Update an existing POI"
+      description: ""
+      operationId: "put_poi"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "POI object that needs to be updated in the database"
+        required: true
+        schema:
+          $ref: "#/definitions/POI"
+      responses:
+        200:
+          description: "Successful operation"
+          headers: {}
+        400:
+          description: "Invalid ID supplied"
+          schema: {}
+        404:
+          description: "POI not found"
+          schema: {}
+        405:
+          description: "Validation exception"
+          schema: {}
+      deprecated: false
+      x-swagger-router-controller: "swagger_server.controllers.poi_controller"
+  /poi/type:
+    get:
+      tags:
+      - "find"
+      summary: "Find POIs by type"
+      description: "Returns a single or an array of POIs"
+      operationId: "get_type"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "type"
+        in: "query"
+        description: "Types values that need to be considered for filter"
+        required: true
+        type: "string"
+        enum:
+        - "accounting"
+        - "airport"
+        - "amusement_park"
+        - "aquarium"
+        - "art_gallery"
+        - "atm"
+        - "bakery"
+        - "bank"
+        - "bar"
+        - "beauty_salon"
+        - "bicycle_store"
+        - "book_store"
+        - "bowling_alley"
+        - "bus_station"
+        - "cafe"
+        - "campground"
+        - "car_dealer"
+        - "car_rental"
+        - "car_repair"
+        - "car_wash"
+        - "casino"
+        - "cemetery"
+        - "church"
+        - "city_hall"
+        - "clothing_store"
+        - "convenience_store"
+        - "courthouse"
+        - "dentist"
+        - "department_store"
+        - "doctor"
+        - "drugstore"
+        - "electrician"
+        - "electronics_store"
+        - "embassy"
+        - "fire_station"
+        - "florist"
+        - "funeral_home"
+        - "furniture_store"
+        - "gas_station"
+        - "grocery_or_supermarket"
+        - "gym"
+        - "hair_care"
+        - "hardware_store"
+        - "hindu_temple"
+        - "home_goods_store"
+        - "hospital"
+        - "insurance_agency"
+        - "jewelry_store"
+        - "laundry"
+        - "lawyer"
+        - "library"
+        - "light_rail_station"
+        - "liquor_store"
+        - "local_government_office"
+        - "locksmith"
+        - "lodging"
+        - "meal_delivery"
+        - "meal_takeaway"
+        - "mosque"
+        - "movie_rental"
+        - "movie_theater"
+        - "moving_company"
+        - "museum"
+        - "night_club"
+        - "painter"
+        - "park"
+        - "parking"
+        - "pet_store"
+        - "pharmacy"
+        - "physiotherapist"
+        - "plumber"
+        - "police"
+        - "post_office"
+        - "primary_school"
+        - "real_estate_agency"
+        - "restaurant"
+        - "roofing_contractor"
+        - "rv_park"
+        - "school"
+        - "secondary_school"
+        - "shoe_store"
+        - "shopping_mall"
+        - "spa"
+        - "stadium"
+        - "storage"
+        - "store"
+        - "subway_station"
+        - "supermarket"
+        - "synagogue"
+        - "taxi_stand"
+        - "tourist_attraction"
+        - "train_station"
+        - "transit_station"
+        - "travel_agency"
+        - "university"
+        - "veterinary_care"
+        - "zoo"
+      - name: "lat"
+        in: "query"
+        description: "geocoded latitude of POI"
+        required: false
+        type: "number"
+        format: "double"
+      - name: "long"
+        in: "query"
+        description: "geocoded longitude of POI"
+        required: false
+        type: "number"
+        format: "double"
+      - name: "radius"
+        in: "query"
+        description: "max radius to search an POI"
+        required: false
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Successful operation"
+          headers: {}
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/POI"
+        400:
+          description: "Invalid status value"
+          schema: {}
+      deprecated: false
+      x-swagger-router-controller: "swagger_server.controllers.find_controller"
+  /poi/find:
+    get:
+      tags:
+      - "find"
+      summary: "Returns an array of POIs"
+      description: ""
+      operationId: "get_by_name_or_geocode"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "query"
+        description: "name query of POI"
+        required: false
+        type: "string"
+      - name: "lat"
+        in: "query"
+        description: "geocoded latitude of POI"
+        required: false
+        type: "string"
+      - name: "long"
+        in: "query"
+        description: "geocoded longitude of POI"
+        required: false
+        type: "string"
+      - name: "radius"
+        in: "query"
+        description: "max radius to search an POI"
+        required: false
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Successful operation"
+          headers: {}
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/POI"
+        404:
+          description: "POI not found"
+          schema: {}
+      deprecated: false
+      x-swagger-router-controller: "swagger_server.controllers.find_controller"
+  /poi/{poiId}:
+    get:
+      tags:
+      - "find"
+      summary: "Find POI by ID"
+      description: "Returns a single POI"
+      operationId: "get_by_id"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "poiId"
+        in: "path"
+        description: "ID of POI to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Successful operation"
+          headers: {}
+          schema:
+            $ref: "#/definitions/POI"
+        400:
+          description: "Invalid ID supplied"
+          schema: {}
+        404:
+          description: "POI not found"
+          schema: {}
+      deprecated: false
+      x-swagger-router-controller: "swagger_server.controllers.find_controller"
+    put:
+      tags:
+      - "reviews"
+      summary: "Update rating from one POI"
+      description: ""
+      operationId: "poi_poi_id_put"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "api_key"
+        in: "header"
+        description: ""
+        required: false
+        type: "string"
+      - name: "poiId"
+        in: "path"
+        description: "POI id to update"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "upOrDown"
+        in: "query"
+        description: "True mean upvote, False means downvote."
+        required: true
+        type: "boolean"
+      responses:
+        200:
+          description: "Successful operation"
+          headers: {}
+        400:
+          description: "Invalid ID supplied"
+          schema: {}
+        404:
+          description: "POI not found"
+          schema: {}
+      deprecated: false
+      x-swagger-router-controller: "swagger_server.controllers.reviews_controller"
+    delete:
+      tags:
+      - "poi"
+      summary: "Deletes a POI"
+      description: ""
+      operationId: "delete_poi"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "api_key"
+        in: "header"
+        description: ""
+        required: false
+        type: "string"
+      - name: "poiId"
+        in: "path"
+        description: "POI id to delete"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Successful operation"
+          headers: {}
+        400:
+          description: "Invalid ID supplied"
+          schema: {}
+        404:
+          description: "POI not found"
+          schema: {}
+      deprecated: false
+      x-swagger-router-controller: "swagger_server.controllers.poi_controller"
+  /poi/{poiId}/image:
+    post:
+      tags:
+      - "assets"
+      summary: "Uploads an image"
+      description: ""
+      operationId: "post_image"
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "poiId"
+        in: "path"
+        description: "ID of POI to update"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "upfile1"
+        in: "formData"
+        description: "Image to upload"
+        required: true
+        type: "file"
+      - name: "upfile2"
+        in: "formData"
+        required: false
+        type: "file"
+      - name: "upfile3"
+        in: "formData"
+        required: false
+        type: "file"
+      - name: "note"
+        in: "formData"
+        description: "Description of file contents"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful operation"
+          headers: {}
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        404:
+          description: "POI not found"
+          schema: {}
+      deprecated: false
+      x-swagger-router-controller: "swagger_server.controllers.assets_controller"
+  /poi/{poiId}/review:
+    post:
+      tags:
+      - "reviews"
+      summary: "Uploads an text review"
+      description: ""
+      operationId: "post_review"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "poiId"
+        in: "path"
+        description: "ID of POI to update"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "review"
+        in: "formData"
+        description: "text review to upload"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Successful operation"
+          headers: {}
+          schema:
+            $ref: "#/definitions/ApiResponse"
+      deprecated: false
+      x-swagger-router-controller: "swagger_server.controllers.reviews_controller"
+  /poi/{poiId}/tag:
+    post:
+      tags:
+      - "assets"
+      summary: "Uploads an tag to describe POI"
+      description: ""
+      operationId: "post_tag"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "poiId"
+        in: "path"
+        description: "ID of POI to upload tag"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "tag"
+        in: "formData"
+        description: "tag to describe poi"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Successful operation"
+          headers: {}
+          schema:
+            $ref: "#/definitions/ApiResponse"
+      deprecated: false
+      x-swagger-router-controller: "swagger_server.controllers.assets_controller"
+definitions:
+  POI:
+    type: "object"
+    required:
+    - "address"
+    - "geocode"
+    - "name"
+    - "type"
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+        description: "Identifier."
+      name:
+        type: "string"
+        description: "Contains the human-readable name for the returned result. For\
+          \ establishment results, this is usually the canonicalized business name."
+      type:
+        type: "string"
+        enum:
+        - "accounting"
+        - "airport"
+        - "amusement_park"
+        - "aquarium"
+        - "art_gallery"
+        - "atm"
+        - "bakery"
+        - "bank"
+        - "bar"
+        - "beauty_salon"
+        - "bicycle_store"
+        - "book_store"
+        - "bowling_alley"
+        - "bus_station"
+        - "cafe"
+        - "campground"
+        - "car_dealer"
+        - "car_rental"
+        - "car_repair"
+        - "car_wash"
+        - "casino"
+        - "cemetery"
+        - "church"
+        - "city_hall"
+        - "clothing_store"
+        - "convenience_store"
+        - "courthouse"
+        - "dentist"
+        - "department_store"
+        - "doctor"
+        - "drugstore"
+        - "electrician"
+        - "electronics_store"
+        - "embassy"
+        - "fire_station"
+        - "florist"
+        - "funeral_home"
+        - "furniture_store"
+        - "gas_station"
+        - "grocery_or_supermarket"
+        - "gym"
+        - "hair_care"
+        - "hardware_store"
+        - "hindu_temple"
+        - "home_goods_store"
+        - "hospital"
+        - "insurance_agency"
+        - "jewelry_store"
+        - "laundry"
+        - "lawyer"
+        - "library"
+        - "light_rail_station"
+        - "liquor_store"
+        - "local_government_office"
+        - "locksmith"
+        - "lodging"
+        - "meal_delivery"
+        - "meal_takeaway"
+        - "mosque"
+        - "movie_rental"
+        - "movie_theater"
+        - "moving_company"
+        - "museum"
+        - "night_club"
+        - "painter"
+        - "park"
+        - "parking"
+        - "pet_store"
+        - "pharmacy"
+        - "physiotherapist"
+        - "plumber"
+        - "police"
+        - "post_office"
+        - "primary_school"
+        - "real_estate_agency"
+        - "restaurant"
+        - "roofing_contractor"
+        - "rv_park"
+        - "school"
+        - "secondary_school"
+        - "shoe_store"
+        - "shopping_mall"
+        - "spa"
+        - "stadium"
+        - "storage"
+        - "store"
+        - "subway_station"
+        - "supermarket"
+        - "synagogue"
+        - "taxi_stand"
+        - "tourist_attraction"
+        - "train_station"
+        - "transit_station"
+        - "travel_agency"
+        - "university"
+        - "veterinary_care"
+        - "zoo"
+      address:
+        type: "string"
+        description: "Is a string containing the human-readable address of this place.\
+          \ Often this address is equivalent to the postal address."
+      phone_number:
+        type: "string"
+        description: "Contains the places phone number in its local format."
+      geocode:
+        $ref: "#/definitions/POI_geocode"
+      price_level:
+        type: "string"
+        description: "The price level of the place, on a scale of 0 to 4. The exact\
+          \ amount indicated by a specific value will vary from region to region.\
+          \ Price levels are interpreted as follows: 0 — Free, 1 — Inexpensive, 2\
+          \ — Moderate, 3 — Expensive, 4 — Very Expensive"
+      opening_hours:
+        type: "string"
+        description: "Contains a pair of day and time objects describing when the\
+          \ place opens."
+      rating:
+        type: "integer"
+        format: "int32"
+        description: ""
+      website:
+        type: "string"
+        description: "Lists the authoritative website for this place, such as a business\
+          \ homepage."
+  ApiResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      type:
+        type: "string"
+      message:
+        type: "string"
+    title: "ApiResponse"
+    example:
+      code: 0
+      type: "type"
+      message: "message"
+  POI_geocode:
+    type: "object"
+    properties:
+      latitude:
+        type: "number"
+        format: "double"
+        description: "geocoded latitude of POI"
+      longitude:
+        type: "number"
+        format: "double"
+        description: "geocoded longitude of POI"
+    description: "Contains the geocoded latitude, longitude value for this place."
+    example:
+      latitude: "latitude"
+      longitude: "longitude"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
