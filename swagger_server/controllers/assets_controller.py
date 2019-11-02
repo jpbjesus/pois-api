@@ -1,17 +1,20 @@
 import connexion
 import six
 
-from swagger_server.models.api_response import ApiResponse  # noqa: E501
+from swagger_server.models.api_response import ApiResponse 
 from swagger_server import util
 
+from pprint import pprint
+from bson.objectid import ObjectId
+from swagger_server.controllers import pois
 
-def post_image(poiId, upfile1, upfile2=None, upfile3=None, note=None):  # noqa: E501
+from werkzeug.datastructures import FileStorage
+
+def post_image(poiId, upfile1, upfile2=None, upfile3=None, note=None): 
     """Uploads an image
 
-     # noqa: E501
-
     :param poiId: ID of POI to update
-    :type poiId: int
+    :type poiId: str
     :param upfile1: Image to upload
     :type upfile1: werkzeug.datastructures.FileStorage
     :param upfile2: 
@@ -23,19 +26,21 @@ def post_image(poiId, upfile1, upfile2=None, upfile3=None, note=None):  # noqa: 
 
     :rtype: ApiResponse
     """
+
     return 'do some magic!'
 
 
-def post_tag(poiId, tag):  # noqa: E501
+def post_tag(poiId, tag): 
     """Uploads an tag to describe POI
 
-     # noqa: E501
-
     :param poiId: ID of POI to upload tag
-    :type poiId: int
+    :type poiId: str
     :param tag: tag to describe poi
     :type tag: str
 
     :rtype: ApiResponse
     """
+
+    pois.update({{'_id': poiId}, {"$set": {'tags': tag}}})
+
     return 'do some magic!'

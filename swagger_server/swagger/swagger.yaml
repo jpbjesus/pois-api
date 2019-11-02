@@ -6,17 +6,15 @@ info:
   title: "POIs API"
   contact:
     email: "jpbjesus@ua.pt"
-host: "virtserver.swaggerhub.com"
-basePath: "/jpbjesus/poi_api/1.0.0"
+host: "poi-api-3aybx4hfgq-ew.a.run.app"
+basePath: "/poi_api/"
 tags:
 - name: "poi"
   description: "Everything about POIs"
 - name: "find"
   description: "Find POIs"
-- name: "reviews"
-  description: ""
 - name: "assets"
-  description: ""
+  description: "Images and Curiosities about POIs"
 schemes:
 - "https"
 - "http"
@@ -53,6 +51,29 @@ paths:
           schema: {}
       deprecated: false
       x-swagger-router-controller: "swagger_server.controllers.poi_controller"
+    get:
+      tags:
+      - "find"
+      summary: "Get ID by name"
+      description: "Returns a single or an array of POIs"
+      operationId: "get_id"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "query"
+        description: "Name of POI"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Successful operation"
+          headers: {}
+        404:
+          description: "POI not found"
+          headers: {}
+      deprecated: false
+      x-swagger-router-controller: "swagger_server.controllers.find_controller"
     put:
       tags:
       - "poi"
@@ -202,7 +223,7 @@ paths:
         required: false
         type: "number"
         format: "double"
-      - name: "long"
+      - name: "lng"
         in: "query"
         description: "geocoded longitude of POI"
         required: false
@@ -233,21 +254,16 @@ paths:
       - "find"
       summary: "Returns an array of POIs"
       description: ""
-      operationId: "get_by_name_or_geocode"
+      operationId: "get_by_geocode"
       produces:
       - "application/json"
       parameters:
-      - name: "name"
-        in: "query"
-        description: "name query of POI"
-        required: false
-        type: "string"
       - name: "lat"
         in: "query"
         description: "geocoded latitude of POI"
-        required: false
+        required: true
         type: "string"
-      - name: "long"
+      - name: "lng"
         in: "query"
         description: "geocoded longitude of POI"
         required: false
@@ -285,8 +301,7 @@ paths:
         in: "path"
         description: "ID of POI to return"
         required: true
-        type: "integer"
-        format: "int64"
+        type: "string"
       responses:
         200:
           description: "Successful operation"
@@ -301,43 +316,6 @@ paths:
           schema: {}
       deprecated: false
       x-swagger-router-controller: "swagger_server.controllers.find_controller"
-    put:
-      tags:
-      - "reviews"
-      summary: "Update rating from one POI"
-      description: ""
-      operationId: "poi_poi_id_put"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "api_key"
-        in: "header"
-        description: ""
-        required: false
-        type: "string"
-      - name: "poiId"
-        in: "path"
-        description: "POI id to update"
-        required: true
-        type: "integer"
-        format: "int64"
-      - name: "upOrDown"
-        in: "query"
-        description: "True mean upvote, False means downvote."
-        required: true
-        type: "boolean"
-      responses:
-        200:
-          description: "Successful operation"
-          headers: {}
-        400:
-          description: "Invalid ID supplied"
-          schema: {}
-        404:
-          description: "POI not found"
-          schema: {}
-      deprecated: false
-      x-swagger-router-controller: "swagger_server.controllers.reviews_controller"
     delete:
       tags:
       - "poi"
@@ -356,8 +334,7 @@ paths:
         in: "path"
         description: "POI id to delete"
         required: true
-        type: "integer"
-        format: "int64"
+        type: "string"
       responses:
         200:
           description: "Successful operation"
@@ -417,37 +394,6 @@ paths:
           schema: {}
       deprecated: false
       x-swagger-router-controller: "swagger_server.controllers.assets_controller"
-  /poi/{poiId}/review:
-    post:
-      tags:
-      - "reviews"
-      summary: "Uploads an text review"
-      description: ""
-      operationId: "post_review"
-      consumes:
-      - "application/x-www-form-urlencoded"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "poiId"
-        in: "path"
-        description: "ID of POI to update"
-        required: true
-        type: "integer"
-        format: "int64"
-      - name: "review"
-        in: "formData"
-        description: "text review to upload"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "Successful operation"
-          headers: {}
-          schema:
-            $ref: "#/definitions/ApiResponse"
-      deprecated: false
-      x-swagger-router-controller: "swagger_server.controllers.reviews_controller"
   /poi/{poiId}/tag:
     post:
       tags:
@@ -456,7 +402,8 @@ paths:
       description: ""
       operationId: "post_tag"
       consumes:
-      - "application/x-www-form-urlencoded"
+      - "application/json"
+      - "multipart/form-data"
       produces:
       - "application/json"
       parameters:
@@ -488,10 +435,6 @@ definitions:
     - "name"
     - "type"
     properties:
-      id:
-        type: "integer"
-        format: "int32"
-        description: "Identifier."
       name:
         type: "string"
         description: "Contains the human-readable name for the returned result. For\
@@ -606,19 +549,26 @@ definitions:
       geocode:
         $ref: "#/definitions/POI_geocode"
       price_level:
-        type: "string"
+        type: "integer"
+        format: "int32"
         description: "The price level of the place, on a scale of 0 to 4. The exact\
           \ amount indicated by a specific value will vary from region to region.\
           \ Price levels are interpreted as follows: 0 — Free, 1 — Inexpensive, 2\
           \ — Moderate, 3 — Expensive, 4 — Very Expensive"
+        minimum: 0
+        maximum: 4
       opening_hours:
-        type: "string"
-        description: "Contains a pair of day and time objects describing when the\
-          \ place opens."
+        type: "array"
+        description: "Is an array of seven strings representing the formatted opening hours for each day of the week. "
+        items: 
+          type: "string"
+          minItems: 7
+          maxItems: 7
       rating:
-        type: "integer"
-        format: "int32"
-        description: ""
+        type: "number"
+        format: "double"
+        description: "Contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews"
+        maximum: 5.0
       website:
         type: "string"
         description: "Lists the authoritative website for this place, such as a business\
@@ -634,10 +584,6 @@ definitions:
       message:
         type: "string"
     title: "ApiResponse"
-    example:
-      code: 0
-      type: "type"
-      message: "message"
   POI_geocode:
     type: "object"
     properties:
@@ -650,9 +596,6 @@ definitions:
         format: "double"
         description: "geocoded longitude of POI"
     description: "Contains the geocoded latitude, longitude value for this place."
-    example:
-      latitude: "latitude"
-      longitude: "longitude"
 externalDocs:
   description: "Find out more about Swagger"
   url: "http://swagger.io"

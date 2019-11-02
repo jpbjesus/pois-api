@@ -1,25 +1,31 @@
 import connexion
 import six
 
-from pprint import pprint
 from connexion.decorators.validation import *
 from swagger_server.models.poi import POI  
 from swagger_server.models.poi_geocode import POIGeocode
 from swagger_server import util
 from swagger_server.controllers import pois
 
+import Geohash
+import proximityhash
+
+from pprint import pprint
+from bson.objectid import ObjectId
+
 def delete_poi(poiId, api_key=None):  
     """Deletes a POI
 
     :param poiId: POI id to delete
-    :type poiId: int
+    :type poiId: str
     :param api_key: 
     :type api_key: str
 
     :rtype: None
     """
+    
     try:
-        pois.remove({'id': poiId})
+        pois.remove({'_id': ObjectId(poiId)})
     except IndexError as e:
         pprint(e)
         return 'POI not found', 404
@@ -41,12 +47,13 @@ def post_poi(body):
         geocode = POIGeocode(dikt['latitude'], dikt['longitude']).to_dict()
         
         inserted = pois.insert_one({'address': body.address,
-                                    'geocode': geocode,
+                                    'geocode': geocode, 
+                                    'geohash': Geohash.encode(float(geocode['latitude']), float(geocode['longitude']), precision=7),
                                     'name': body.name,
                                     'opening_hours': body.opening_hours,
                                     'phone_number': body.phone_number,
                                     'price_level': body.price_level,
-                                    'rating': body.rating,
+                                    'rating': 0 if is_null(body.rating) else body.rating,
                                     'type': body.type,
                                     'website': body.website})
 
@@ -69,7 +76,7 @@ def put_poi(body):
 
         pois.insert({'address': body.address,
                      'geocode': geocode,
-                     'id': body.id,
+                     'geohash': Geohash.encode(float(geocode['latitude']), float(geocode['longitude']), precision=7),
                      'name': body.name,
                      'opening_hours': body.opening_hours,
                      'phone_number': body.phone_number,

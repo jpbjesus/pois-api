@@ -1,10 +1,13 @@
-FROM python:3-alpine
+# FROM python:3-alpine
+FROM jfloff/alpine-python:3.7
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 COPY requirements.txt /usr/src/app/
 
+# RUN apt-get python-dev
+RUN pip3 install --upgrade setuptools pip
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY . /usr/src/app

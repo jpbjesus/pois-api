@@ -1,14 +1,15 @@
 # coding: utf-8
+import json
 
 from pymongo import MongoClient
 from pprint import pprint
 
-# client = MongoClient(
-#     "mongodb+srv://jpbjesus:<password>@cluster0-96wjv.gcp.mongodb.net/", ssl=True)
+mongodb_uri = "mongodb+srv://jpbjesus:qfCZRh5GVfzTPiZs@cluster0-96wjv.gcp.mongodb.net/"
+client = MongoClient(mongodb_uri, ssl=True)
 
-client = MongoClient('localhost', 27017)
+# client = MongoClient('localhost', 27017)
 
-db = client.pymongo_test
+db = client.pois_api
 pois = db.pois
 
 try:
@@ -16,3 +17,15 @@ try:
     # pprint(status)
 except Exception as e:
     pprint(e)
+
+def build_JSON_cursor(cursor):
+    """
+    Builds a JSON response for a given cursor
+    """
+    response = json.loads('{}')
+    response_to_append_to = response['results'] = []
+
+    for idx, bp in enumerate(cursor):
+        response_to_append_to.append(bp)
+
+    return response
