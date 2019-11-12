@@ -9,91 +9,94 @@ from swagger_server.models import POIGeocode
 
 import sys
 import Geohash
+import base64
 
 lat = sys.argv[1]
 lng = sys.argv[2]
 radius = sys.argv[3]
 
 API_KEY = 'AIzaSyBu5GK0P_4ojVWTyOjaXHBbUiY75M4abSw'
+CLIENT_ID = "f80fa92a3bfe9b0"
 
-# client = MongoClient(
-#     "mongodb+srv://jpbjesus:<password>@cluster0-96wjv.gcp.mongodb.net/", ssl=True)
-
-# client = MongoClient('localhost', 27017)
-
-# mongodb_uri = "mongodb+srv://jpbjesus:qfCZRh5GVfzTPiZs@cluster0-96wjv.gcp.mongodb.net/"
-# client = MongoClient(mongodb_uri, ssl=True)
-
-
-# db = client.pois_api
-# pois = db.pois
-
-# try:
-#     status = db.command("serverStatus")
-#     # pprint(status)
-# except Exception as e:
-#     pprint(e)
-
-count = 0
-
-for i in ['airport', 'amusement_park', 'aquarium', 'art_gallery', 'bar', 'bus_station', 'cafe', 'campground', 'casino', 'cemetery', 'church', 'hindu_temple', 'library', 'movie_theater', 'museum', 'night_club', 'restaurant', 'shopping_mall', 'spa', 'stadium', 'subway_station', 'tourist_attraction', 'train_station', 'university', 'zoo']:
-    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={},{}&radius={}&type={}&key={}".format(
-        lat, lng, radius, i, API_KEY)
-
+def get_photo(photo_reference):
+    url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=600&photoreference={}&key={}".format(
+        photo_reference, API_KEY)
     response = requests.get(url)
+    return upload_imgur(response.content)
 
-    for result in response.json()["results"]:
-        geocode = POIGeocode(result['geometry']['location']['lat'],
-                            result['geometry']['location']['lng']).to_dict()
-        
-        url1 = "https://maps.googleapis.com/maps/api/place/details/json?place_id={}&fields=name,formatted_address,rating,formatted_phone_number,website,opening_hours,photos&key={}".format(
-            result['place_id'], API_KEY)
 
-        response = requests.get(url1)
-        res=response.json()
+def upload_imgur(imagefile):
+    url = 'https://api.imgur.com/3/image'
 
-        poi = POI(name=res['result']['name'], type=i, address=res['result']['formatted_address'], phone_number=(res['result']['formatted_phone_number'] if "formatted_phone_number" in res['result'] else None),
-                    geocode=geocode, price_level=(res['result']['price_level'] if "price_level" in res['result'] else None), opening_hours=(res['result']['opening_hours']['weekday_text'] if 'opening_hours' in res['result'] else None), rating=(res['result']['rating'] if 'rating' in res['result'] else 0.0),
-                    website=(res['result']['website'] if "website" in res['result'] else None))
-       
-        if 'photos' in res['result']:
-            for ref in res['result']['photos']:
-                photo_reference = ref['photo_reference']
-        else:
-            photo_reference = None
-        
-        body = {'address': poi.address,
+    payload = {
+        'image': base64.standard_b64encode(imagefile)
+    }
+    files = {}
+    headers = {
+        'Authorization': 'Client-ID {}'.format(CLIENT_ID)
+    }
+    response = requests.request(
+        'POST', url, headers=headers, data=payload, files=files, allow_redirects=False)
+    
+    return json.loads(response.text)['data']['link']
+
+if __name__ == "__main__":
+    count = 0
+    types = 'airport', 'amusement_park', 'aquarium', 'art_gallery', 'bar', 'bus_station', 'cafe', 'campground', 'casino', 'cemetery', 'church', 'hindu_temple', 'library', 'movie_theater', 'museum', 'night_club', 'restaurant', 'shopping_mall', 'spa', 'stadium', 'subway_station', 'tourist_attraction', 'train_station', 'university', 'zoo'
+    for i in ['tourist_attraction' or 'point_of_interest']:
+        url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={},{}&radius={}&type={}&key={}".format(
+            lat, lng, radius, i, API_KEY)
+
+        response = requests.get(url)
+
+        for result in response.json()["results"]:
+            geocode = POIGeocode(result['geometry']['location']['lat'],
+                                result['geometry']['location']['lng']).to_dict()
+            
+            url1 = "https://maps.googleapis.com/maps/api/place/details/json?place_id={}&fields=name,formatted_address,formatted_phone_number,website,opening_hours,photos,types&key={}".format(
+                result['place_id'], API_KEY)
+
+            response = requests.get(url1)
+            res=response.json()
+
+            photos = []
+
+            if 'photos' in res['result']:
+                # for ref in res['result']['photos']:
+                #     photos.append(get_photo(ref['photo_reference']))
+                photos = None
+            else:
+                photos = None
+            
+            poi = POI(  name=res['result']['name'], 
+                        type=res['result']['types'], 
+                        address=res['result']['formatted_address'], 
+                        phone_number=res['result']['formatted_phone_number'] if "formatted_phone_number" in res['result'] else None,
+                        geocode=geocode, 
+                        opening_hours=res['result']['opening_hours']['weekday_text'] if 'opening_hours' in res['result'] else None,
+                        website=res['result']['website'] if "website" in res['result'] else None, 
+                        photos=photos)
+
+            website = poi.website[0] if not None else None
+            
+            body = {
+                'address': poi.address,
                 'geocode': geocode,
                 'geohash': Geohash.encode(float(geocode['latitude']), float(geocode['longitude']), precision=7),
                 'name': poi.name,
                 'opening_hours': poi.opening_hours,
                 'phone_number': poi.phone_number,
-                'price_level': poi.price_level,
                 'type': poi.type,
-                'website': poi.website,
-                'photo_reference': photo_reference}
+                'website': website,
+                'photos': poi.photos
+            }
 
-        for k, v in list(body.items()): 
-            if v == None:
-                try:
-                    body.pop(k)
-                except:
-                    pass
+            for k, v in list(body.items()): 
+                if v == None:
+                    try:
+                        body.pop(k)
+                    except:
+                        pass
         
-        # pprint(json.loads(json.dumps(body)))
-
-        if poi.rating is 0.0:
-            pass
-        else:
-            pprint("/n")
             req = requests.post("https://poi-api-3aybx4hfgq-ew.a.run.app/poi_api/poi", json=body)
-            pprint(req.json())
-
-            # pprint("INSERTED... " + res['result']
-            #     ['name'] + " (" + str(count) + ")")
-            # count += 1
-
-def get_photo(photo_reference):
-    url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={}&key={}".format(photo_reference, API_KEY)
-    response = requests.get(url1)
-    res = response.json()
+            print(req.text)

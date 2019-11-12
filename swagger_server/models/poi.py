@@ -16,38 +16,35 @@ class POI(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str = None, type: str = None, address: str = None, phone_number: str = None, geocode: POIGeocode = None, price_level: int = None, opening_hours: List[str] = None, rating: float = None, website: str = None):  # noqa: E501
+    def __init__(self, name: str = None, type: str = None, address: str = None, phone_number: str = None, geocode: POIGeocode = None, opening_hours: List[str] = None, website: str = None, photos: List[str] = None):  # noqa: E501
         """POI - a model defined in Swagger
 
         :param name: The name of this POI.  # noqa: E501
         :type name: str
-        :param type: The type of this POI.  # noqa: E501
-        :type type: str
+        :param type: The types of this POI.  # noqa: E501
+        :type type: List[str]
         :param address: The address of this POI.  # noqa: E501
         :type address: str
         :param phone_number: The phone_number of this POI.  # noqa: E501
         :type phone_number: str
         :param geocode: The geocode of this POI.  # noqa: E501
         :type geocode: POIGeocode
-        :param price_level: The price_level of this POI.  # noqa: E501
-        :type price_level: int
         :param opening_hours: The opening_hours of this POI.  # noqa: E501
         :type opening_hours: List[str]
-        :param rating: The rating of this POI.  # noqa: E501
-        :type rating: float
         :param website: The website of this POI.  # noqa: E501
         :type website: str
+        :param photos: The photos of this POI.  # noqa: E501
+        :type photos: List[str]
         """
         self.swagger_types = {
             'name': str,
-            'type': str,
+            'type': List[str],
             'address': str,
             'phone_number': str,
             'geocode': POIGeocode,
-            'price_level': int,
             'opening_hours': List[str],
-            'rating': float,
-            'website': str
+            'website': str,
+            'photos': List[str]
         }
 
         self.attribute_map = {
@@ -56,10 +53,9 @@ class POI(Model):
             'address': 'address',
             'phone_number': 'phone_number',
             'geocode': 'geocode',
-            'price_level': 'price_level',
             'opening_hours': 'opening_hours',
-            'rating': 'rating',
-            'website': 'website'
+            'website': 'website',
+            'photos' : 'photos'
         }
 
         self._name = name
@@ -67,10 +63,9 @@ class POI(Model):
         self._address = address
         self._phone_number = phone_number
         self._geocode = geocode
-        self._price_level = price_level
         self._opening_hours = opening_hours
-        self._rating = rating
-        self._website = website
+        self._website = website,
+        self._photos = photos 
 
     @classmethod
     def from_dict(cls, dikt) -> 'POI':
@@ -109,30 +104,29 @@ class POI(Model):
         self._name = name
 
     @property
-    def type(self) -> str:
+    def type(self) -> List[str]:
         """Gets the type of this POI.
 
-
         :return: The type of this POI.
-        :rtype: str
+        :rtype: Lsit[str]
         """
         return self._type
 
     @type.setter
-    def type(self, type: str):
+    def type(self, type: List[str]):
         """Sets the type of this POI.
 
-
         :param type: The type of this POI.
-        :type type: str
+        :type type: List[str]
         """
-        allowed_values = ["accounting", "airport", "amusement_park", "aquarium", "art_gallery", "atm", "bakery", "bank", "bar", "beauty_salon", "bicycle_store", "book_store", "bowling_alley", "bus_station", "cafe", "campground", "car_dealer", "car_rental", "car_repair", "car_wash", "casino", "cemetery", "church", "city_hall", "clothing_store", "convenience_store", "courthouse", "dentist", "department_store", "doctor", "drugstore", "electrician", "electronics_store", "embassy", "fire_station", "florist", "funeral_home", "furniture_store", "gas_station", "grocery_or_supermarket", "gym", "hair_care", "hardware_store", "hindu_temple", "home_goods_store", "hospital", "insurance_agency", "jewelry_store", "laundry", "lawyer", "library", "light_rail_station", "liquor_store", "local_government_office", "locksmith", "lodging", "meal_delivery", "meal_takeaway", "mosque", "movie_rental", "movie_theater", "moving_company", "museum", "night_club", "painter", "park", "parking", "pet_store", "pharmacy", "physiotherapist", "plumber", "police", "post_office", "primary_school", "real_estate_agency", "restaurant", "roofing_contractor", "rv_park", "school", "secondary_school", "shoe_store", "shopping_mall", "spa", "stadium", "storage", "store", "subway_station", "supermarket", "synagogue", "taxi_stand", "tourist_attraction", "train_station", "transit_station", "travel_agency", "university", "veterinary_care", "zoo"]  # noqa: E501
-        if type not in allowed_values:
-            raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"
-                .format(type, allowed_values)
-            )
-
+        allowed_values = ["accounting", "airport", "amusement_park", "aquarium", "art_gallery", "atm", "bakery", "bank", "bar", "beauty_salon", "bicycle_store", "book_store", "bowling_alley", "bus_station", "cafe", "campground", "car_dealer", "car_rental", "car_repair", "car_wash", "casino", "cemetery", "church", "city_hall", "clothing_store", "convenience_store", "courthouse", "dentist", "department_store", "doctor", "drugstore", "electrician", "electronics_store", "embassy", "fire_station", "florist", "funeral_home", "furniture_store", "gas_station", "grocery_or_supermarket", "gym", "hair_care", "hardware_store", "hindu_temple", "home_goods_store", "hospital", "insurance_agency", "jewelry_store", "laundry", "lawyer", "library", "light_rail_station", "liquor_store", "local_government_office", "locksmith", "lodging", "meal_delivery", "meal_takeaway", "mosque", "movie_rental", "movie_theater", "moving_company", "museum", "night_club", "painter", "park", "parking", "pet_store", "pharmacy", "physiotherapist", "plumber", "police", "post_office", "primary_school", "real_estate_agency", "restaurant", "roofing_contractor", "rv_park", "school", "secondary_school", "shoe_store", "shopping_mall", "spa", "stadium", "storage", "store", "subway_station", "supermarket", "synagogue", "taxi_stand", "tourist_attraction", "train_station", "transit_station", "travel_agency", "university", "veterinary_care", "zoo", "point_of_interest", "establishment"]  # noqa: E501
+        
+        # for t in type:
+        #     if t not in allowed_values:
+        #         raise ValueError(
+        #             "Invalid value for `type` ({0}), must be one of {1}"
+        #             .format(type, allowed_values)
+        #         )
         self._type = type
 
     @property
@@ -207,33 +201,6 @@ class POI(Model):
         self._geocode = geocode
 
     @property
-    def price_level(self) -> int:
-        """Gets the price_level of this POI.
-
-        The price level of the place, on a scale of 0 to 4. The exact amount indicated by a specific value will vary from region to region. Price levels are interpreted as follows: 0 — Free, 1 — Inexpensive, 2 — Moderate, 3 — Expensive, 4 — Very Expensive  # noqa: E501
-
-        :return: The price_level of this POI.
-        :rtype: int
-        """
-        return self._price_level
-
-    @price_level.setter
-    def price_level(self, price_level: int):
-        """Sets the price_level of this POI.
-
-        The price level of the place, on a scale of 0 to 4. The exact amount indicated by a specific value will vary from region to region. Price levels are interpreted as follows: 0 — Free, 1 — Inexpensive, 2 — Moderate, 3 — Expensive, 4 — Very Expensive  # noqa: E501
-
-        :param price_level: The price_level of this POI.
-        :type price_level: int
-        """
-        if price_level is not None and price_level > 4:  # noqa: E501
-            raise ValueError("Invalid value for `price_level`, must be a value less than or equal to `4`")  # noqa: E501
-        if price_level is not None and price_level < 0:  # noqa: E501
-            raise ValueError("Invalid value for `price_level`, must be a value greater than or equal to `0`")  # noqa: E501
-
-        self._price_level = price_level
-
-    @property
     def opening_hours(self) -> List[str]:
         """Gets the opening_hours of this POI.
 
@@ -257,31 +224,6 @@ class POI(Model):
         self._opening_hours = opening_hours
 
     @property
-    def rating(self) -> float:
-        """Gets the rating of this POI.
-
-        Contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews  # noqa: E501
-
-        :return: The rating of this POI.
-        :rtype: float
-        """
-        return self._rating
-
-    @rating.setter
-    def rating(self, rating: float):
-        """Sets the rating of this POI.
-
-        Contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews  # noqa: E501
-
-        :param rating: The rating of this POI.
-        :type rating: float
-        """
-        if rating is not None and rating > 5:  # noqa: E501
-            raise ValueError("Invalid value for `rating`, must be a value less than or equal to `5`")  # noqa: E501
-
-        self._rating = rating
-
-    @property
     def website(self) -> str:
         """Gets the website of this POI.
 
@@ -303,3 +245,22 @@ class POI(Model):
         """
 
         self._website = website
+
+    @property
+    def photos(self) -> List[str]:
+        """Gets the photos of this POI.
+
+        :return: The photos of this POI.
+        :rtype: List[str]
+        """
+        return self._photos
+
+    @photos.setter
+    def photos(self, photos: List[str]):
+        """Sets the photos of this POI.
+
+        :param photos: The photos of this POI.
+        :type photos: List[str]
+        """
+
+        self._photos = photos

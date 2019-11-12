@@ -16,6 +16,9 @@ def main():
     app = connexion.App(__name__, specification_dir='./swagger/')
     app.app.json_encoder = encoder.JSONEncoder
     app.add_api('swagger.yaml', arguments={'title': 'POIs API'})
+    # Limited the maximum allowed payload to 16 megabytes.
+    # If a larger file is transmitted, Flask will raise an RequestEntityTooLarge exception.
+    # app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
     app.run(port=8080, debug=True)
 
 if __name__ == '__main__':

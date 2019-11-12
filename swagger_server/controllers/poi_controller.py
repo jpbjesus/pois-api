@@ -52,10 +52,9 @@ def post_poi(body):
                                     'name': body.name,
                                     'opening_hours': body.opening_hours,
                                     'phone_number': body.phone_number,
-                                    'price_level': body.price_level,
-                                    'rating': 0 if is_null(body.rating) else body.rating,
                                     'type': body.type,
-                                    'website': body.website})
+                                    'website': body.website,
+                                    'photos': body.photos})
 
     return 'OK! Succesful Operation; inserted with id: ' + str(inserted.inserted_id), 200
 
@@ -80,9 +79,8 @@ def put_poi(body):
                      'name': body.name,
                      'opening_hours': body.opening_hours,
                      'phone_number': body.phone_number,
-                     'price_level': body.price_level,
-                     'rating': body.rating,
                      'type': body.type,
-                     'website': body.website})
+                     'website': body.website,
+                     'photos': body.photos})
     
     return 'OK! Succesful Operation', 200
