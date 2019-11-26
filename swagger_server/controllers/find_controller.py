@@ -109,7 +109,7 @@ def get_type(type, lat=None, lng=None, radius=None):
     for elem in set_proximity:
        try:
             ghash = pois.find({'geohash': elem})
-            if ghash[0]['type']==type:
+            if type in ghash[0]['type']:
                 pois_list.append(ghash[0])
                 pprint("distance: " + str(CoordDistance(float(lat), float(lng), float(ghash[0]['geocode']['latitude']), float(ghash[0]['geocode']['longitude']))))
        except IndexError as e:

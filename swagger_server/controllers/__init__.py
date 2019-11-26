@@ -18,7 +18,7 @@ try:
 except Exception as e:
     pprint(e)
 
-def build_JSON_cursor(cursor):
+def build(cursor):
     """
     Builds a JSON response for a given cursor
     """

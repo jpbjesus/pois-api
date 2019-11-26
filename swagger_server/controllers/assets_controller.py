@@ -12,7 +12,6 @@ import werkzeug
 import requests
 import base64
 import json
-# from werkzeug.datastructures import FileStorage
 
 CLIENT_ID = "f80fa92a3bfe9b0"
 
@@ -37,9 +36,9 @@ def post_image(poiId, upfile1, upfile2=None, upfile3=None, note=None):
         file1 = upload_imgur(
             imagefile=connexion.request.files['upfile1'].read())
 
-    pois.update({'_id': poiId}, {"$addToSet": {'photos': file1}})
+    pois.update({'_id': poiId}, {"$set": {'photos': file1}})
     
-    return ApiResponse(code=200, type=None, message="")
+    return ApiResponse(code=200, type=None, message="Image uploaded")
 
 def post_tag(poiId, tag): 
     """Uploads an tag to describe POI
@@ -54,7 +53,7 @@ def post_tag(poiId, tag):
 
     pois.update({{'_id': poiId}, {"$set": {'tags': tag}}})
 
-    return ApiResponse(code=200, type=None, message="")
+    return ApiResponse(code=200, type=None, message="Tag posted")
 
 def upload_imgur(imagefile):
     url = 'https://api.imgur.com/3/image'

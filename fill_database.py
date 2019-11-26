@@ -11,9 +11,14 @@ import sys
 import Geohash
 import base64
 
-lat = sys.argv[1]
-lng = sys.argv[2]
-radius = sys.argv[3]
+# lat = sys.argv[1]
+# lng = sys.argv[2]
+city = sys.argv[1]
+radius = sys.argv[2]
+
+geocoding_url="https://api.opencagedata.com/geocode/v1/json?q={}&key=e463adfff05c42ab97cffecba4856bca".format(city)
+req = requests.get(geocoding_url)
+geometry = req.json()['results'][0]['geometry']
 
 API_KEY = 'AIzaSyBu5GK0P_4ojVWTyOjaXHBbUiY75M4abSw'
 CLIENT_ID = "f80fa92a3bfe9b0"
@@ -43,9 +48,9 @@ def upload_imgur(imagefile):
 if __name__ == "__main__":
     count = 0
     types = 'airport', 'amusement_park', 'aquarium', 'art_gallery', 'bar', 'bus_station', 'cafe', 'campground', 'casino', 'cemetery', 'church', 'hindu_temple', 'library', 'movie_theater', 'museum', 'night_club', 'restaurant', 'shopping_mall', 'spa', 'stadium', 'subway_station', 'tourist_attraction', 'train_station', 'university', 'zoo'
-    for i in ['tourist_attraction' or 'point_of_interest']:
+    for i in ['tourist_attraction' or 'point_of_interest' or 'stadium']:
         url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={},{}&radius={}&type={}&key={}".format(
-            lat, lng, radius, i, API_KEY)
+            geometry['lat'], geometry['lng'], radius, i, API_KEY)
 
         response = requests.get(url)
 
@@ -53,7 +58,7 @@ if __name__ == "__main__":
             geocode = POIGeocode(result['geometry']['location']['lat'],
                                 result['geometry']['location']['lng']).to_dict()
             
-            url1 = "https://maps.googleapis.com/maps/api/place/details/json?place_id={}&fields=name,formatted_address,formatted_phone_number,website,opening_hours,photos,types&key={}".format(
+            url1 = "https://maps.googleapis.com/maps/api/place/details/json?place_id={}&fields=name,formatted_address,formatted_phone_number,website,opening_hours,photos,types&language=pt-PT&key={}".format(
                 result['place_id'], API_KEY)
 
             response = requests.get(url1)
@@ -97,6 +102,8 @@ if __name__ == "__main__":
                         body.pop(k)
                     except:
                         pass
-        
+            
+            pprint(body)
+
             req = requests.post("https://poi-api-3aybx4hfgq-ew.a.run.app/poi_api/poi", json=body)
             print(req.text)
