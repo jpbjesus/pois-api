@@ -8,7 +8,7 @@ from flask import jsonify
 
 from swagger_server.models.poi import POI  
 from swagger_server.controllers import pois
-from swagger_server.controllers import build_JSON_cursor
+from swagger_server.controllers import build_cursor
 from swagger_server import util
 from swagger_server.models.poi_geocode import POIGeocode
 import proximityhash
@@ -18,6 +18,7 @@ import Geohash
 
 import requests
 from requests.exceptions import HTTPError
+from swagger_server.controllers import redis_client
 
 def get_id(name):
     """ Find ID by name
@@ -29,7 +30,7 @@ def get_id(name):
     :rtype: POI
     """
     
-    return jsonify(build_JSON_cursor(pois.find({"name": {"$regex": name, "$options": 'i'}}))['results'][0]['_id'])
+    return jsonify(build_cursor(pois.find({"name": {"$regex": name, "$options": 'i'}}))['results'][0]['_id'])
 
 def get_by_id(poiId):  
     """Find POI by ID
@@ -69,17 +70,27 @@ def get_by_geocode(lat, lng, radius=None):
     if radius is None:
         radius = 5000
 
-    geohash = proximityhash.create_geohash(latitude=float(lat), longitude=float(lng), radius=radius, precision=7)
-    set_proximity = geohash.replace("'","").split(",")
+    # geohash = proximityhash.create_geohash(latitude=float(lat), longitude=float(lng), radius=radius, precision=7)
+    # set_proximity = geohash.replace("'","").split(",")
 
-    for elem in set_proximity:
-       try:
-            ghash = pois.find({'geohash': elem})
-            pois_list.append(ghash[0])
-       except IndexError as e:
-           pass
+    # for elem in set_proximity:
+    #    try:
+    #         ghash = pois.find({'geohash': elem})
+    #         pois_list.append(ghash[0])
+    #    except IndexError as e:
+    #        pass
+    
+    query = redis_client.georadius("geo", str(lng), str(
+        lat), radius=radius, unit="m", withdist=True)
+    
+    response = json.loads('{}')
+    response_to_append_to = response = []
+    
+    for k, v in enumerate(query):
+        response_to_append_to.append(requests.get(
+            "https://poi-api-3aybx4hfgq-ew.a.run.app/poi_api/poi/{}".format(query[k][0])).json())
 
-    return jsonify(pois_list), 200
+    return response, 200
 
 
 def get_type(type, lat=None, lng=None, radius=None): 
@@ -103,19 +114,27 @@ def get_type(type, lat=None, lng=None, radius=None):
     if radius is None:
         radius = 5000
 
-    geohash = proximityhash.create_geohash(latitude=float(lat), longitude=float(lng), radius=radius, precision=7)
-    set_proximity = geohash.replace("'", "").split(",")
+    # geohash = proximityhash.create_geohash(latitude=float(lat), longitude=float(lng), radius=radius, precision=7)
+    # set_proximity = geohash.replace("'", "").split(",")
 
-    for elem in set_proximity:
-       try:
-            ghash = pois.find({'geohash': elem})
-            if type in ghash[0]['type']:
-                pois_list.append(ghash[0])
-                pprint("distance: " + str(CoordDistance(float(lat), float(lng), float(ghash[0]['geocode']['latitude']), float(ghash[0]['geocode']['longitude']))))
-       except IndexError as e:
-           pass
+    # for elem in set_proximity:
+    #    try:
+    #         ghash = pois.find({'geohash': elem})
+    #         if type in ghash[0]['type']:
+    #             pois_list.append(ghash[0])
+    #             pprint("distance: " + str(CoordDistance(float(lat), float(lng), float(ghash[0]['geocode']['latitude']), float(ghash[0]['geocode']['longitude']))))
+    #    except IndexError as e:
+    #        pass
 
-    return jsonify(pois_list), 200
+    query = redis_client.georadius("geo", str(lng), str(
+        lat), radius=radius, unit="m", withdist=True)
 
-def CoordDistance(lat1, lng1, lat2, lng2):
-    return 6371 * math.acos(math.sin(lat1) * math.sin(lat2) + math.cos(lat1) * math.cos(lat2) * math.cos(lng2 - lng1))
+    response = json.loads('{}')
+    response_to_append_to = response = []
+
+    for k, v in enumerate(query):
+        res = requests.get(
+            "https://poi-api-3aybx4hfgq-ew.a.run.app/poi_api/poi/{}".format(query[k][0])).json()
+        if type in res['type']:
+            response_to_append_to.append(res)
+    return response, 200

@@ -15,10 +15,10 @@ client = MongoClient(mongodb_uri, ssl=True)
 db = client.pois_api
 pois = db.pois
 
-key = "geo"
-
 city = sys.argv[1]
 radius = sys.argv[2]
+
+key = "geo"
 
 def build_cursor(cursor):
     """
