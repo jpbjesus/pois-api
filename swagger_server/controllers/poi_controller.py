@@ -6,6 +6,7 @@ from swagger_server.models.poi import POI
 from swagger_server.models.poi_geocode import POIGeocode
 from swagger_server import util
 from swagger_server.controllers import pois
+from swagger_server.controllers import redis_client
 
 import Geohash
 import proximityhash
@@ -23,12 +24,13 @@ def delete_poi(poiId, api_key=None):
 
     :rtype: None
     """
-    
     try:
         pois.remove({'_id': ObjectId(poiId)})
     except IndexError as e:
         pprint(e)
         return 'POI not found', 404
+    
+    redis_client.zrem("geo", str(poiId))
 
     return 'OK! Succesful Operation', 200
 
@@ -55,8 +57,11 @@ def post_poi(body):
                                     'type': body.type,
                                     'website': body.website,
                                     'photos': body.photos})
+        
+        redis_client.geoadd("geo", geocode['longitude'], geocode['latitude'], ObjectId(inserted.inserted_id).__str__())
+        redis_client.geohash("geo", ObjectId(inserted.inserted_id).__str__())
 
-    return 'OK! Succesful Operation; inserted with id: ' + str(inserted.inserted_id), 200
+    return 'OK! Succesful Operation; inserted with id: ' + ObjectId(inserted.inserted_id).__str__(), 200
 
 
 def put_poi(body):  
@@ -73,7 +78,7 @@ def put_poi(body):
         dikt = POIGeocode.to_dict(body.geocode)
         geocode = POIGeocode(dikt['latitude'], dikt['longitude']).to_dict()
 
-        pois.insert({'address': body.address,
+        inserted = pois.insert({'address': body.address,
                      'geocode': geocode,
                      'geohash': Geohash.encode(float(geocode['latitude']), float(geocode['longitude']), precision=7),
                      'name': body.name,
@@ -83,4 +88,8 @@ def put_poi(body):
                      'website': body.website,
                      'photos': body.photos})
     
+    # redis_client.zrem("geo", ObjectId(inserted.inserted_id).__str__())
+    # redis_client.geoadd("geo", geocode['longitude'], geocode['latitude'], ObjectId(inserted.inserted_id).__str__())
+    # redis_client.geohash("key", ObjectId(inserted.inserted_id).__str__())
+
     return 'OK! Succesful Operation', 200
