@@ -33,11 +33,10 @@ def post_image(poiId, upfile1, upfile2=None, upfile3=None, note=None):
     """
 
     if connexion.request.files['upfile1']:
-        file1 = upload_imgur(
-            imagefile=connexion.request.files['upfile1'].read())
+        file1 = upload_imgur(imagefile=connexion.request.files['upfile1'].read())
 
     pois.update({'_id': poiId}, {"$set": {'photos': file1}})
-    
+
     return ApiResponse(code=200, type=None, message="Image uploaded")
 
 def post_tag(poiId, tag): 
@@ -66,5 +65,5 @@ def upload_imgur(imagefile):
     }
     response = requests.request(
         'POST', url, headers=headers, data=payload, files=files, allow_redirects=False)
-
+    pprint(response)
     return json.loads(response.text)['data']['link']

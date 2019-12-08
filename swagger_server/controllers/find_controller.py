@@ -13,7 +13,7 @@ from swagger_server import util
 from swagger_server.models.poi_geocode import POIGeocode
 import proximityhash
 from bson.objectid import ObjectId
-
+from pymongo.collation import Collation
 import Geohash
 
 import requests
@@ -29,8 +29,11 @@ def get_id(name):
     
     :rtype: POI
     """
-    
-    return jsonify(build_cursor(pois.find({"name": {"$regex": name, "$options": 'i'}}))['results'][0]['_id'])
+    try:
+        response = jsonify(build_cursor(pois.find({"name": {"$regex": name, "$options": 'i'}}))['results'][0]['_id'])
+    except Exception as e:
+        return "POI not found", 404
+    return response, 200
 
 def get_by_id(poiId):  
     """Find POI by ID
@@ -45,9 +48,7 @@ def get_by_id(poiId):
     try:
         response = pois.find_one({'_id': ObjectId(poiId)})
     except IndexError as e:
-        pprint(e)
         return 'POI not found', 404
-
     return jsonify(response), 200
 
 
@@ -65,31 +66,20 @@ def get_by_geocode(lat, lng, radius=None):
 
     : rtype: List[POI]
     """
-    pois_list = list()
 
     if radius is None:
         radius = 5000
-
-    # geohash = proximityhash.create_geohash(latitude=float(lat), longitude=float(lng), radius=radius, precision=7)
-    # set_proximity = geohash.replace("'","").split(",")
-
-    # for elem in set_proximity:
-    #    try:
-    #         ghash = pois.find({'geohash': elem})
-    #         pois_list.append(ghash[0])
-    #    except IndexError as e:
-    #        pass
     
-    query = redis_client.georadius("geo", str(lng), str(
-        lat), radius=radius, unit="m", withdist=True)
-    
+    query = redis_client.georadius("geo", str(lng), str(lat), radius=radius, unit="m", withdist=True)
+    pprint(query)
     response = json.loads('{}')
     response_to_append_to = response = []
-    
-    for k, v in enumerate(query):
-        response_to_append_to.append(requests.get(
-            "https://poi-api-3aybx4hfgq-ew.a.run.app/poi_api/poi/{}".format(query[k][0])).json())
 
+    for k, v in enumerate(query):
+        response_to_append_to.append(requests.get("https://poi-api-3aybx4hfgq-ew.a.run.app/poi_api/poi/{}".format(query[k][0])).json())
+        response[k]['distance']=query[k][1]
+    if response == []:
+        return response, 404
     return response, 200
 
 
@@ -114,27 +104,15 @@ def get_type(type, lat=None, lng=None, radius=None):
     if radius is None:
         radius = 5000
 
-    # geohash = proximityhash.create_geohash(latitude=float(lat), longitude=float(lng), radius=radius, precision=7)
-    # set_proximity = geohash.replace("'", "").split(",")
-
-    # for elem in set_proximity:
-    #    try:
-    #         ghash = pois.find({'geohash': elem})
-    #         if type in ghash[0]['type']:
-    #             pois_list.append(ghash[0])
-    #             pprint("distance: " + str(CoordDistance(float(lat), float(lng), float(ghash[0]['geocode']['latitude']), float(ghash[0]['geocode']['longitude']))))
-    #    except IndexError as e:
-    #        pass
-
-    query = redis_client.georadius("geo", str(lng), str(
-        lat), radius=radius, unit="m", withdist=True)
-
+    query = redis_client.georadius("geo", str(lng), str(lat), radius=radius, unit="m", withdist=True)
     response = json.loads('{}')
     response_to_append_to = response = []
 
     for k, v in enumerate(query):
-        res = requests.get(
-            "https://poi-api-3aybx4hfgq-ew.a.run.app/poi_api/poi/{}".format(query[k][0])).json()
+        res = requests.get("https://poi-api-3aybx4hfgq-ew.a.run.app/poi_api/poi/{}".format(query[k][0])).json()
+        response[k]['distance'] = query[k][1]
         if type in res['type']:
             response_to_append_to.append(res)
+    if response == []:
+        return response, 404
     return response, 200

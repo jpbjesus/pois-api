@@ -6,7 +6,7 @@ info:
   title: "POIs API"
   contact:
     email: "jpbjesus@ua.pt"
-host: "poi-api-3aybx4hfgq-ew.a.run.app"
+# host: "poi-api-3aybx4hfgq-ew.a.run.app"
 basePath: "/poi_api/"
 tags:
 - name: "poi"

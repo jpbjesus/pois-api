@@ -9,7 +9,7 @@ from pprint import pprint
 mongodb_uri = "mongodb+srv://jpbjesus:qfCZRh5GVfzTPiZs@cluster0-96wjv.gcp.mongodb.net/"
 client = MongoClient(mongodb_uri, ssl=True)
 
-redis_host = os.environ.get('REDISHOST', '35.193.190.16')
+redis_host = os.environ.get('REDISHOST', '35.195.152.213')
 redis_port = int(os.environ.get('REDISPORT', 6379))
 key = "geo"
 
@@ -33,11 +33,6 @@ try:
     # using the default encoding utf-8.  This is client specific.
     redis_client = redis.StrictRedis(
         host=redis_host, port=redis_port, decode_responses=True)
-        
-    for poi in build_cursor(pois.find({})):
-        redis_client.geoadd(key, poi['geocode']['longitude'], poi['geocode']['latitude'], ObjectId(poi["_id"]).__str__())
-        redis_client.geohash(key, ObjectId(poi["_id"]).__str__())
 
 except Exception as e:
     pprint(e)
-
